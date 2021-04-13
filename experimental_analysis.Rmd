@@ -1,0 +1,56 @@
+---
+title: "experiment"
+author: "Stephen Shannon"
+date: "April 12, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(dplyr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r input data}
+#BPM per subject replication 1 (divide by 6 for raw measured heart rate)
+v1 <- c(180, 174, 180, 180)
+v2 <- c(174, 180, 174, 174)
+v3 <- c(186, 192, 198, 192)
+
+#BPM per subject replication 2
+r1 <- c(180, 180, 186, 180)
+r2 <- c(168, 174, 174, 168)
+r3 <- c(180, 186, 186, 192)
+
+#time for each trial repliaction 1
+t1 <- c(106, 107, 101, 103)
+t2 <- c(113, 116, 116, 108)
+t3 <- c(147, 148, 145, 144)
+
+#time for each trial replication 2
+s1 <- c(108, 106, 102, 103)
+s2 <- c(124, 120, 115, 115)
+s3 <- c(143, 148, 151, 149)
+```
+
+```{r subject1 analysis}
+stretch <- c(-1, 1, -1, 1)
+music <- c(-1, -1, 1, 1)
+run <- c(1:4)
+table1 <- data.frame(run, run, S, M, v1, r1, r1-v1)
+table1 <- table1 %>% rename('run2'='run.1', 'bpm1'='v1', 'bpm2'='r1', 'diff'='r1...v1')
+
+#fact.mod1 <- lm(bpm1~S*M, data=table1)
+#summary(fact.mod1)
+
+stretch2 <- c(stretch, stretch)
+music2 <- c(music, music)
+table2 <- data.frame(c(run, run), stretch2, music2, c(v1, r1))
+table2 <- table2 %>% rename('run'='c.run..run.', 'bpm'='c.v1..r1.')
+fact.mod2 <- lm(bpm~stretch2*music2, data=table2)
+model.matrix(fact.mod2)
+summary(fact.mod2)
+```
