@@ -8,6 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(dplyr)
+library(knitr)
+library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -15,42 +17,75 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r input data}
+  
 #BPM per subject replication 1 (divide by 6 for raw measured heart rate)
-v1 <- c(180, 174, 180, 180)
-v2 <- c(174, 180, 174, 174)
-v3 <- c(186, 192, 198, 192)
 
-#BPM per subject replication 2
-r1 <- c(180, 180, 186, 180)
-r2 <- c(168, 174, 174, 168)
-r3 <- c(180, 186, 186, 192)
+v1 <- c(180, 174, 180, 180)/6
+v2 <- c(174, 180, 174, 174)/6
+v3 <- c(186, 192, 198, 192)/6
 
-#time for each trial repliaction 1
+
+
+  #BPM per subject replication 2
+
+r1 <- c(180, 180, 186, 180)/6
+r2 <- c(168, 174, 174, 168)/6
+r3 <- c(180, 186, 186, 192)/6
+
+
+  #time for each trial repliaction 1
+
 t1 <- c(106, 107, 101, 103)
 t2 <- c(113, 116, 116, 108)
 t3 <- c(147, 148, 145, 144)
 
-#time for each trial replication 2
+  #time for each trial replication 2
+
 s1 <- c(108, 106, 102, 103)
 s2 <- c(124, 120, 115, 115)
 s3 <- c(143, 148, 151, 149)
 ```
 
 ```{r subject1 analysis}
-stretch <- c(-1, 1, -1, 1)
-music <- c(-1, -1, 1, 1)
-run <- c(1:4)
-table1 <- data.frame(run, run, S, M, v1, r1, r1-v1)
-table1 <- table1 %>% rename('run2'='run.1', 'bpm1'='v1', 'bpm2'='r1', 'diff'='r1...v1')
+subject <- c(rep(1,8),rep(2,8),rep(3,8))
+stretch <- rep(rep(c(-1, 1, -1, 1), 2), 3)
+music <- rep(rep(c(-1, -1, 1, 1), 2), 3)
+run <- rep(c(1:4), 6)
+rep <- rep(c(rep(1,4), rep(2,4)), 3)
+bpm <- c(v1, r1, v2, r2, v3, r3)
+avg_baseline1 <- (10+11+10+10+11)/5
+avg_baseline2 <- (11+12+12+11+11)/5
+avg_baseline3 <- (10+10+11+10+10)/5
+baseline_bpm <- c(rep(avg_baseline1,8),rep(avg_baseline2,8),rep(avg_baseline3,8))
+bpm_increase <- bpm - baseline_bpm
 
+#table1 <- data.frame(run, run, S, M, v1, r1, r1-v1)
+#table1 <- table1 %>% rename('run2'='run.1', 'bpm1'='v1', 'bpm2'='r1', 'diff'='r1...v1')
+
+#kable(table1)
 #fact.mod1 <- lm(bpm1~S*M, data=table1)
 #summary(fact.mod1)
 
-stretch2 <- c(stretch, stretch)
-music2 <- c(music, music)
-table2 <- data.frame(c(run, run), stretch2, music2, c(v1, r1))
-table2 <- table2 %>% rename('run'='c.run..run.', 'bpm'='c.v1..r1.')
-fact.mod2 <- lm(bpm~stretch2*music2, data=table2)
-model.matrix(fact.mod2)
-summary(fact.mod2)
+table2 <- data.frame(subject, baseline_bpm, run, rep, stretch, music, bpm_increase)
+table2 %>% rename()
+kable(table2)
+#fact.mod2 <- lm(bpm_increase ~ stretch*music, data=table2)
+#model.matrix(fact.mod2)
+#summary(fact.mod2)
 ```
+
+```{r }
+ggplot(table2, aes(x=run, y=bpm_increase, fill=factor(run))) + 
+  geom_boxplot()
+
+ggplot(table2, aes(x=run, y=bpm_increase, fill=factor(run))) + 
+```
+
+
+```{r LME}
+model <- lme4::glmer(bpm_increase ~ music*stretch + (1|baseline_bpm), data=table2)
+summary(model)
+
+
+```
+
